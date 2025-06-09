@@ -45,6 +45,8 @@
     .card h3 {
       font-size: 16px;
       margin: 0 0 6px 0;
+      cursor: pointer;
+      text-decoration: underline;
     }
     .count {
       font-size: 22px;
@@ -68,6 +70,7 @@
     <span id="currentDay"></span>
     <button onclick="changeDay(1)">&gt;&gt;</button>
   </header>
+
   <div class="grid" id="cardContainer"></div>
 
   <script>
@@ -100,6 +103,13 @@
       localStorage.setItem(getKey(id), val);
     }
 
+    function logChange(id) {
+      const logKey = `log_${id}`;
+      const logs = JSON.parse(localStorage.getItem(logKey) || "[]");
+      logs.push(new Date().toISOString());
+      localStorage.setItem(logKey, JSON.stringify(logs));
+    }
+
     function updateDayDisplay() {
       document.getElementById('currentDay').textContent = currentDate.toLocaleDateString();
     }
@@ -119,7 +129,7 @@
         card.className = 'card';
         card.style.backgroundColor = c.color;
         card.innerHTML = `
-          <h3>${c.title}</h3>
+          <h3 onclick="openDetail('${c.id}')">${c.title}</h3>
           <div class="count" id="count-${c.id}">${val}</div>
           <div class="card-controls">
             <button onclick="adjust('${c.id}', -1)">−</button>
@@ -133,7 +143,12 @@
     function adjust(id, delta) {
       const newVal = loadCount(id) + delta;
       saveCount(id, newVal);
+      logChange(id);
       document.getElementById(`count-${id}`).textContent = newVal;
+    }
+
+    function openDetail(id) {
+      window.location.href = `dettaglio.html?counter=${id}`;
     }
 
     render();
@@ -142,11 +157,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js')
-          .then(reg => console.log("Service Worker registrato", reg))
-          .catch(err => console.error("Service Worker non registrato", err));
+        navigator.serviceWorker.register('./service-worker.js');
       });
     }
   </script>
-</body>
-</html>
